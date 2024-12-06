@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Website</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Blog Website</h1>
+        <nav>
+            <a href="#" id="loadPosts">Home</a>
+            <a href="#" id="createPost">Create Post</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="postList" class="hidden">
+            <h2>All Posts</h2>
+            <div id="postsContainer"></div>
+        </section>
+
+        <section id="postForm" class="hidden">
+            <h2>Create or Edit Post</h2>
+            <form id="postFormElement">
+                <input type="hidden" id="postId" />
+                <label>
+                    Title:
+                    <input type="text" id="postTitle" required>
+                </label>
+                <label>
+                    Content:
+                    <textarea id="postContent" required></textarea>
+                </label>
+                <label>
+                    Author:
+                    <input type="text" id="postAuthor" required>
+                </label>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
