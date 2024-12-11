@@ -10,10 +10,10 @@ POST http://localhost:5000/auth/register
 Content-Type: application/json
 
 {
-  "username": "hannitam",
-  "password": "password123",
+  "username": "fan",
+  "password": "wer",
   "blog":"a collage student",
-  "email": "haname@11gmail.com"
+  "email": "hana@gmil.com"
 }
 
 

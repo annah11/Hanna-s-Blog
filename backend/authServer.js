@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcrypt');
+const { registerSchema, loginSchema } = require('./validation');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
@@ -34,21 +35,22 @@ const authenticateToken = (req, res, next) => {
 };
 
 authRouter.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Username and password are required', success: false, data: null });
+  const { error } = registerSchema.validate(req.body); // Validate request body
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message, success: false });
   }
+
+  const { username, email, password } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({ username, email, password: hashedPassword });
+
     await newUser.save();
-    res.status(201).json({ message: 'User registered successfully', success: true, data: null });
-  } catch (error) {
+    res.status(201).json({ message: "User registered successfully", success: true });
+  } catch (err) {
     res.status(500).json({
-      message: error.code === 11000 ? 'Username already exists' : error.message,
-      success: false,
-      data: null,
+      message: err.code === 11000 ? "Username or email already exists" : err.message,
     });
   }
 });
