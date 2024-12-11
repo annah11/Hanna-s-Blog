@@ -34,7 +34,26 @@ const registerSchema = Joi.object({
       'any.required': 'Password is required.',
     }),
 });
+const loginSchema = Joi.object({
+    username: Joi.string().required(),
+    password: Joi.string().required(),
+  });
+  
+  const blogSchema = Joi.object({
+    title: Joi.string().min(5).max(100).required(),
+    description: Joi.string().min(10).required(),
+    author: Joi.string().required(),
+  });
+  
+  const postSchema = Joi.object({
+    title: Joi.string().min(5).max(100).required(),
+    description: Joi.string().min(10).required(),
+    author: Joi.string().required(),
+  });
 
 module.exports = {
   registerSchema,
+  loginSchema,
+  blogSchema,
+  postSchema,
 };
