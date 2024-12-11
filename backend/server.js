@@ -1,19 +1,22 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
+const { authRouter, authenticateToken } = require('./authServer');
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT = 5000;
-
 mongoose.connect(
-  "mongodb+srv://hanamesfin:hana1996@test-pro.7sydj.mongodb.net/test-pro?retryWrites=true&w=majority",
+  process.env.MONGO_URI || "mongodb+srv://hanamesfin:hana1996@test-pro.7sydj.mongodb.net/test-pro?retryWrites=true&w=majority",
   { useNewUrlParser: true, useUnifiedTopology: true }
-);
+).then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("Failed to connect to MongoDB", err));
 
 const PostSchema = new mongoose.Schema({
   title: String,
@@ -31,10 +34,10 @@ const BlogSchema = new mongoose.Schema({
 });
 
 PostSchema.set('toJSON', {
-  versionKey: false, 
+  versionKey: false,
   transform: (doc, ret) => {
     ret.id = ret._id;
-    delete ret._id;   
+    delete ret._id;
   }
 });
 
@@ -47,6 +50,8 @@ BlogSchema.set('toJSON', {
 
 const Post = mongoose.model('Post', PostSchema);
 const Blog = mongoose.model('Blog', BlogSchema);
+
+app.use('/auth', authRouter);
 
 app.get('/posts', async (req, res) => {
   try {
@@ -86,107 +91,72 @@ app.post('/posts', async (req, res) => {
   }
 });
 
-app.put('/posts/:id', async (req, res) => {
-  const { title, description, author } = req.body;
-
-  try {
-    const updatedPost = await Post.findByIdAndUpdate(
-      req.params.id,
-      { title, description, author },
-      { new: true }
-    );
-
-    if (updatedPost) {
-      res.status(200).json(updatedPost);
-    } else {
-      res.status(404).json({ message: "Post not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.delete('/posts/:id', async (req, res) => {
-  try {
-    const deletedPost = await Post.findByIdAndDelete(req.params.id);
-    if (deletedPost) {
-      res.status(200).json({ message: "Post deleted successfully" });
-    } else {
-      res.status(404).json({ message: "Post not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 app.get('/blogs', async (req, res) => {
   try {
     const blogs = await Blog.find();
-    res.status(200).json(blogs);
+    res.status(200).json({
+      message: "Blogs fetched successfully",
+      success: true,
+      data: blogs
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      data: null
+    });
   }
 });
 
 app.get('/blogs/:id', async (req, res) => {
   try {
     const blog = await Blog.findOne({ id: req.params.id });
-    if (blog) {
-      res.status(200).json(blog);
-    } else {
-      res.status(404).json({ message: "Blog not found" });
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found",
+        success: false,
+        data: null
+      });
     }
+    res.status(200).json({
+      message: "Blog fetched successfully",
+      success: true,
+      data: blog
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      data: null
+    });
   }
 });
 
-app.post('/blogs', async (req, res) => {
+app.post('/blogs', authenticateToken, async (req, res) => {
   const { title, description, author } = req.body;
 
   if (!title || !description || !author) {
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({
+      message: "All fields are required",
+      success: false,
+      data: null
+    });
   }
 
   try {
     const newBlog = new Blog({ title, description, author });
     const savedBlog = await newBlog.save();
-    res.status(201).json(savedBlog);
+    res.status(201).json({
+      message: "Blog created successfully",
+      success: true,
+      data: savedBlog
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.put('/blogs/:id', async (req, res) => {
-  const { title, description, author } = req.body;
-
-  try {
-    const updatedBlog = await Blog.findOneAndUpdate(
-      { id: req.params.id },
-      { title, description, author },
-      { new: true }
-    );
-
-    if (updatedBlog) {
-      res.status(200).json(updatedBlog);
-    } else {
-      res.status(404).json({ message: "Blog not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.delete('/blogs/:id', async (req, res) => {
-  try {
-    const deletedBlog = await Blog.findOneAndDelete({ id: req.params.id });
-    if (deletedBlog) {
-      res.status(200).json({ message: "Blog deleted successfully" });
-    } else {
-      res.status(404).json({ message: "Blog not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      data: null
+    });
   }
 });
 
