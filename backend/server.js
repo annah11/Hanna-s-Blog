@@ -61,6 +61,9 @@ app.get('/posts', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+app.get('/', (req, res) => {
+  res.send('Hello, from another side!');
+});
 
 app.get('/posts/:id', async (req, res) => {
   try {
