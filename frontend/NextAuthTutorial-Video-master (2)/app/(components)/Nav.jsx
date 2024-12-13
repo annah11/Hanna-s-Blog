@@ -5,7 +5,7 @@ import { options } from "../api/auth/[...nextauth]/options";
 const Nav = async () => {
   const session = await getServerSession(options);
   return (
-    <header className="bg-gray-600 text-gray-100">
+    <header className="bg-gray-900 text-gray-100">
       <nav className="flex justify-between items-center w-full px-10 py-4">
         <div>My Site</div>
         <div className="flex gap-10">
