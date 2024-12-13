@@ -35,7 +35,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 authRouter.post('/register', async (req, res) => {
-  const { error } = registerSchema.validate(req.body); // Validate request body
+  const { error } = registerSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message, success: false });
   }
